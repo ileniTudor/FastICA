@@ -4,9 +4,10 @@
     on Neural Networks 10.3 (1999): 626-634", where it was first introduced.
 """
 import numpy as np
-from contrast_function import  contrast_function_factory
+from contrast_function import contrast_function_factory
 from preprocessing.whitening import whitening
 from metrics.distance_metrics_factory import get_similarity_metric_fn
+
 
 def calculate_new_w(w, X):
     """
@@ -29,7 +30,7 @@ def calculate_new_w(w, X):
     return w_new
 
 
-def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True,verbose:bool=True):
+def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True, verbose: bool = True):
     """
     :param X: input sources matrix. It is a NxM matrix. Where N is the number of rows corresponding to
               the number of components and M is represents the number of samples for each component.
@@ -43,6 +44,8 @@ def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True,ver
 
     if do_whitening:
         X = whitening(X)
+        if verbose:
+            print("--> Whitening of data was performed")
     components_nr = X.shape[0]
     if verbose:
         print('look for ', components_nr, 'components')
@@ -57,7 +60,7 @@ def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True,ver
                 # in order to prevent the new output w to converge to an already found maxima
                 w_new -= np.dot(np.dot(w_new, W[:i].T), W[:i])
             distance_fn = get_similarity_metric_fn("euclidean")
-            dist = distance_fn(w,w_new)
+            dist = distance_fn(w, w_new)
             w = w_new
 
             if dist < tolerance:

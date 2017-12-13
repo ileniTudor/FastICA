@@ -1,12 +1,15 @@
 import numpy as np
 
 
-def mix_sources(mixtures:list):
+def mix_sources(mixtures: list, apply_noise:bool = True):
     # normalize data
-    for i,mix in enumerate(mixtures):
-        if np.max(mix) > 1 or np.min(mix) < 1:
-            mixtures[i] = mix / (np.max(mix)/2) - 1.0
-    X = np.c_[[mix for mix in mixtures]].T
-    # add random noise
-    X += 0.2 * np.random.normal(size=X.shape)
+    for i in range(len(mixtures)):
+        max_val = np.max(mixtures[i])
+        if max_val > 1 or np.min(mixtures[i]) < 1:
+            # continue
+            mixtures[i] = mixtures[i] / (max_val / 2) - 0.5
+    X = np.c_[[mix for mix in mixtures]]
+    if apply_noise:
+        # add random noise
+        X += 0.02 * np.random.normal(size=X.shape)
     return X

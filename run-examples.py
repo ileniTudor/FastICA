@@ -7,6 +7,8 @@ from scipy.io import wavfile
 from data_utils.IO_util import get_audio_data
 from data_utils.generate_data import generate_toy_signals
 from decomposition.fastICA import ica
+from data_utils.create_mixtures import mix_sources
+from evaluation.calculate_person_correlation import calculate_pearson_correlation
 
 sample_dir = os.path.abspath('audio_samples/s1/')
 
@@ -44,22 +46,23 @@ def plot_mixture_sources_predictions(X, original_sources, S):
     plt.show()
 
 
-def run_for_2observations():
+def run_for_2observations(wrtie_sources_to_disk:bool = False):
     sampling_rate, mix1 = get_audio_data(os.path.join(sample_dir, "mix1.wav"))
     sampling_rate, mix2 = get_audio_data(os.path.join(sample_dir, "mix2.wav"))
     sampling_rate, real_source_1 = get_audio_data(os.path.join(sample_dir, "source1.wav"))
     sampling_rate, real_source_2 = get_audio_data(os.path.join(sample_dir, "source2.wav"))
-
-    mix2 = mix2 / 255.0 - 0.5
-    mix1 = mix1 / 255.0 - 0.5
-
-    X = np.c_[mix1, mix2].T
+    actual = mix_sources([real_source_1,real_source_2],False)
+    X = mix_sources([mix1, mix2])
     S = ica(X, max_iter=1000)
-    for i,s in enumerate(S):
-        wavfile.write(os.path.join(sample_dir, 'predicted_source' + str(i) + '.wav'), sampling_rate, s)
+    person_coeff = calculate_pearson_correlation(S,actual,True)
+    print("Pearson correlation coefficient between the predicted sources and actual sources is",person_coeff)
+    if wrtie_sources_to_disk:
+        for i,s in enumerate(S):
+            wavfile.write(os.path.join(sample_dir, 'predicted_source' + str(i) + '.wav'), sampling_rate, s)
 
     plot_mixture_sources_predictions(X,[real_source_1,real_source_2],S)
 
+
 if __name__ == "__main__":
-    run_for_toy_data()
+    # run_for_toy_data()
     run_for_2observations()
