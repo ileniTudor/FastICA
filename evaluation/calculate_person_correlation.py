@@ -18,15 +18,11 @@ def calculate_pearson_correlation(prediction, actual,verbose:bool = False):
     # The one which is closer (pers_coef is larger) is that one corresponding to the source 0
 
     if abs(pear_0_0[0]) > abs(pear_0_1[0]):
-        if verbose:
-            print("normal way")
         # True source 0 match with the prediction 0.
         pear0 = pear_0_0
         # Compute the pear coef for the true source 1 with the prediction 1.
         pear1 = pearsonr(actual[1], prediction[1])
     else:
-        if verbose:
-            print("NOT normal way")
         # True source 1 match with the prediction 1.
         pear0 = pear_0_1
         # Compute the pear coef for the true source 1 with the prediction 0.

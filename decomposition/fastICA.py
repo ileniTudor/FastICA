@@ -22,7 +22,6 @@ def calculate_new_w(w, X):
 
     g, g_der = fn_and_der(np.dot(w.T, X), None)
 
-    # gwtx, g_wtx = _exp(np.dot(w.T, X))
     w_new = (X * g).mean(axis=1) - g_der.mean() * w
 
     w_new /= np.sqrt((w_new ** 2).sum())
@@ -30,7 +29,8 @@ def calculate_new_w(w, X):
     return w_new
 
 
-def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True, verbose: bool = True):
+def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True, verbose: bool = True,
+        dist_fn=''):
     """
     :param X: input sources matrix. It is a NxM matrix. Where N is the number of rows corresponding to
               the number of components and M is represents the number of samples for each component.
@@ -38,7 +38,7 @@ def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True, ve
     :param tolerance: used to check if two vectors are equal
     :param do_whitening: when True perform the whitening preprocessing
     :param verbose: write to console the progress of the decomposition
-
+    :param dist_fn: distance function between 2 vectors. See metrics module
     :return: S - sources matrix, each row corresponding to a independent component
     """
 
@@ -59,9 +59,11 @@ def ica(X, max_iter: int, tolerance: float = 1e-5, do_whitening: bool = True, ve
                 # decorrelation of outputs w by Gram-Schmidth decorrelation algorithm ([1] pp. 9)
                 # in order to prevent the new output w to converge to an already found maxima
                 w_new -= np.dot(np.dot(w_new, W[:i].T), W[:i])
-            distance_fn = get_similarity_metric_fn("euclidean")
+            distance_fn = get_similarity_metric_fn(dist_fn)
             dist = distance_fn(w, w_new)
             w = w_new
+            if verbose:
+                print(dist)
 
             if dist < tolerance:
                 break

@@ -1,4 +1,4 @@
-from metrics import euclidean, manhattan, chebyshev, cosine
+from metrics import euclidean, manhattan, chebyshev, cosine, default
 
 
 def get_similarity_metric_fn(name: str):
@@ -6,7 +6,8 @@ def get_similarity_metric_fn(name: str):
         'euclidean': euclidean,
         'manhattan': manhattan,
         'chebyshev': chebyshev,
-        'cosine':cosine
+        'cosine':cosine,
+        '':default
     }
     # values = [v for v in functions_map.values()]
     assert name in [v for v in functions_map.keys()]
