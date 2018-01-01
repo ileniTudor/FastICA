@@ -2,6 +2,7 @@ import numpy as np
 
 
 def whitening(x):
+    # subtract the mean of t to have a centered input matrix
     X_mean = x.mean(axis=-1)
     x -= X_mean[:, np.newaxis]
 

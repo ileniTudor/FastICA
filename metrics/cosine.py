@@ -6,7 +6,9 @@ def sqrt_root(x):
 
 
 def compute_distance(x, y):
-    return 1- (np.sum(x * y) / (sqrt_root(x) * sqrt_root(y)))
+    x1=np.abs(x)
+    y1=np.abs(y)
+    return 1- (np.sum(x1 * y1) / (sqrt_root(x1) * sqrt_root(y1)))
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ def run_for_2observations(wrtie_sources_to_disk: bool = False):
     actual = mix_sources([real_source_1, real_source_2], False)
     X = mix_sources([mix1, mix2])
     S = ica(X, max_iter=1000)
-    person_coeff = calculate_pearson_correlation(S, actual, True)
+    person_coeff = calculate_pearson_correlation(S, actual, False)
     print("Pearson correlation coefficient between the predicted sources and actual sources is", person_coeff)
     if wrtie_sources_to_disk:
         for i, s in enumerate(S):
@@ -78,5 +78,5 @@ def run_for_test_dataset():
 
 if __name__ == "__main__":
     # run_for_toy_data()
-    # run_for_2observations()
-    run_for_test_dataset()
+    run_for_2observations(False)
+    # run_for_test_dataset()
