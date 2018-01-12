@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def mix_sources(mixtures: list, apply_noise:bool = True):
+def mix_sources(mixtures: list, apply_noise:bool = False):
     # normalize data
     for i in range(len(mixtures)):
         max_val = np.max(mixtures[i])

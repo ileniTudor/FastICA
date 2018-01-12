@@ -17,11 +17,16 @@ def run_for_toy_data():
     # generate random signal
     s1, s2, s3 = generate_toy_signals()
 
-    X = np.c_[s1, s2, s3].T
-
-    S = ica(X, max_iter=4000)
-
+    X = np.c_[s1, s2, s3]
+    A = np.array(([[1, 1, 1], [0.5, 2, 1.0], [1.5, 1.0, 2.0]]))
+    X = np.dot(X, A.T)
+    X = X.T
+    S = ica(X, max_iter=1000)
+    actual = mix_sources([s1,s2,s3])
     plot_mixture_sources_predictions(X, [s1, s2, s3], S)
+
+    person_coeff = calculate_pearson_correlation(S, actual, False)
+    print("Pearson correlation coefficient between the predicted sources and actual sources is", person_coeff)
 
 
 def run_for_2observations(wrtie_sources_to_disk: bool = False):
@@ -41,10 +46,14 @@ def run_for_2observations(wrtie_sources_to_disk: bool = False):
     plot_mixture_sources_predictions(X, [real_source_1, real_source_2], S)
 
 
-def run_ica(signal1, signal2):
+def run_ica_get_pear_coeff(signal1, signal2,sample_dir,sampling_rate):
     actual = mix_sources([signal1, signal2], apply_noise=False)
     X = mix_sources([signal1, signal2], apply_noise=True)
+
     S = ica(X,tolerance=1e-4, max_iter=1000,verbose=False)
+    for i, s in enumerate(S):
+        wavfile.write(os.path.join(sample_dir, 'predicted_source' + str(i) + '.wav'), sampling_rate, s)
+    plot_mixture_sources_predictions(X, [signal1, signal2], S)
     return calculate_pearson_correlation(S, actual, False)
 
 
@@ -54,19 +63,23 @@ def run_for_test_dataset():
     pearson_coeff_list = np.zeros(shape=samples_number)
 
     for i, dir in enumerate(os.listdir(data_set_dir)):
-        files = os.listdir(data_set_dir + dir)
-        if len(files) == 2:
-            samp_rate, signal1 = get_audio_data(file_name=data_set_dir + dir + "/" + files[0])
-            samp_rate, signal2 = get_audio_data(file_name=data_set_dir + dir + "/" + files[1])
-            min_length = min(len(signal1), len(signal2))
-            if len(signal1) != min_length:
-                signal1 = np.resize(signal1, min_length)
+        dir_path = data_set_dir+dir
+        if os.path.isdir(dir_path):
+            files = os.listdir(dir_path)
+            if len(files) == 2:
+                samp_rate, signal1 = get_audio_data(file_name=data_set_dir + dir + "/" + files[0])
+                samp_rate, signal2 = get_audio_data(file_name=data_set_dir + dir + "/" + files[1])
+                min_length = min(len(signal1), len(signal2))
+                if len(signal1) != min_length:
+                    signal1 = np.resize(signal1, min_length)
+                else:
+                    signal2 = np.resize(signal2, min_length)
+                mean_pers_coeff = run_ica_get_pear_coeff(signal1, signal2,sample_dir=dir_path,sampling_rate=samp_rate)
+                pearson_coeff_list[i] = mean_pers_coeff
+                print("pearson_coeff for sample set",i,": ",pearson_coeff_list[i])
+                break
             else:
-                signal2 = np.resize(signal2, min_length)
-            mean_pers_coeff = run_ica(signal1, signal2)
-            pearson_coeff_list[i] = mean_pers_coeff
-        else:
-            continue
+                continue
 
     mean_pearson_ICA = np.mean(pearson_coeff_list)
     min_ICA = np.min(pearson_coeff_list)
@@ -78,5 +91,5 @@ def run_for_test_dataset():
 
 if __name__ == "__main__":
     # run_for_toy_data()
-    run_for_2observations(False)
-    # run_for_test_dataset()
+    # run_for_2observations(True)
+    run_for_test_dataset()
