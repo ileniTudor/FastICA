@@ -46,13 +46,17 @@ def run_for_2observations(wrtie_sources_to_disk: bool = False):
     plot_mixture_sources_predictions(X, [real_source_1, real_source_2], S)
 
 
-def run_ica_get_pear_coeff(signal1, signal2,sample_dir,sampling_rate):
+def run_ica_get_pearson_coeff(signal1, signal2, sample_dir, sampling_rate,wrtie_sources_to_disk: bool = False):
     actual = mix_sources([signal1, signal2], apply_noise=False)
     X = mix_sources([signal1, signal2], apply_noise=True)
-
-    S = ica(X,tolerance=1e-4, max_iter=1000,verbose=False)
-    for i, s in enumerate(S):
-        wavfile.write(os.path.join(sample_dir, 'predicted_source' + str(i) + '.wav'), sampling_rate, s)
+    X=X.T
+    A = np.array(([[1, 1], [ 2, 1.0]]))
+    X = np.dot(X, A.T)
+    X=X.T
+    S = ica(X,tolerance=1e-4, max_iter=1000,verbose=True)
+    if wrtie_sources_to_disk:
+        for i, s in enumerate(S):
+            wavfile.write(os.path.join(sample_dir, 'predicted_source' + str(i) + '.wav'), sampling_rate, s)
     plot_mixture_sources_predictions(X, [signal1, signal2], S)
     return calculate_pearson_correlation(S, actual, False)
 
@@ -74,10 +78,9 @@ def run_for_test_dataset():
                     signal1 = np.resize(signal1, min_length)
                 else:
                     signal2 = np.resize(signal2, min_length)
-                mean_pers_coeff = run_ica_get_pear_coeff(signal1, signal2,sample_dir=dir_path,sampling_rate=samp_rate)
+                mean_pers_coeff = run_ica_get_pearson_coeff(signal1, signal2, sample_dir=dir_path, sampling_rate=samp_rate)
                 pearson_coeff_list[i] = mean_pers_coeff
                 print("pearson_coeff for sample set",i,": ",pearson_coeff_list[i])
-                break
             else:
                 continue
 
